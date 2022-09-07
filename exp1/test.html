@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <title>my test-file</title>
+	<meta name="viewport" content="width=device-width, user-scalable=no">
+	<script type="text/javascript" src="../libs/dat.gui.js"></script>
+    <style>
+        body{
+            /* set margin to 0 and overflow to hidden, to go fullscreen */
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="c"></canvas>
+	<script type="importmap">
+		{
+			"imports": {
+				"three": "https://spamigor.site/library/threejs/build/three.module.js"
+			}
+		}
+	</script>
+<script type="module">
+	import * as THREE from 'three';
+	import { GLTFLoader } from 'https://spamigor.site/library/threejs/examples/jsm/loaders/GLTFLoader.js';
+	import Stats from 'https://spamigor.site/library/threejs/examples/jsm/libs/stats.module.js';
+	let clock, mixer, model, actions, activeAction;
+	let mobile = false, mControl = false, lookAtCoub = true, speed = 5;
+	const canvas = document.querySelector('#c');
+	const renderer = new THREE.WebGLRenderer({canvas});
+	let stats = new Stats();
+		document.body.appendChild( stats.dom );
+	var isMobile = {
+		Android: function() {
+			return navigator.userAgent.match(/Android/i);
+		},
+		BlackBerry: function() {
+			return navigator.userAgent.match(/BlackBerry/i);
+		},
+		iOS: function() {
+			return navigator.userAgent.match(/iPhone|iPad|iPod/i);
+		},
+		Opera: function() {
+			return navigator.userAgent.match(/Opera Mini/i);
+		},
+		Windows: function() {
+			return navigator.userAgent.match(/IEMobile/i);
+		},
+		any: function() {
+			return (isMobile.Android() || isMobile.BlackBerry() || isMobile.iOS() || isMobile.Opera() || isMobile.Windows());
+		}
+	};
+	
+	isMobile.any() ? mobile = true : console.log('not mobile !');
+
+		var controls = new function() {
+			this.mobile = mobile;
+			this.mouse_control = mControl;
+			this.look_at_coub = lookAtCoub;
+			this.coub_speed = 0.5;
+		}
+
+		var gui = new dat.GUI();
+		gui.add(controls, 'mobile');
+		gui.add(controls, 'mouse_control');
+		gui.add(controls, 'look_at_coub');
+		gui.add(controls, 'coub_speed',0,1);
+		
+        var scene = new THREE.Scene();
+
+		const hemiLight = new THREE.HemisphereLight( 0xffffff, 0x444444 );
+		hemiLight.position.set( 0, 20, 0 );
+		scene.add( hemiLight );
+
+        var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        var planeGeometry = new THREE.PlaneGeometry(2000,2000);
+		var planeMaterial = new THREE.MeshBasicMaterial({color: 0x83a748});
+		var plane = new THREE.Mesh(planeGeometry,planeMaterial);
+		renderer.setClearColor('#a9e0ff', 1.0);
+		renderer.setSize(window.innerWidth, window.innerHeight);
+		renderer.shadowMapEnabled = true;
+
+        plane.rotation.x=-0.5*Math.PI;
+        plane.position.x=15
+        plane.position.y=-1
+        plane.position.z=0
+		plane.receiveShadow = true;
+
+		scene.fog = new THREE.Fog('#a9e0ff', 300, 600);
+        scene.add(plane);
+		
+		//делаем дорогу
+		
+		var planeGeometryRoad = new THREE.PlaneGeometry(2000,20);
+		var planeMaterialRoad = new THREE.MeshBasicMaterial({color: 0x121212});
+		var planeRoad = new THREE.Mesh(planeGeometryRoad,planeMaterialRoad);
+
+        planeRoad.rotation.x=-0.5*Math.PI;
+        planeRoad.position.x=15
+        planeRoad.position.y=0
+        planeRoad.position.z=-3
+
+  
+        scene.add(planeRoad);
+		
+		var planeGeometryRoadPict = new THREE.PlaneGeometry(2000,0.2);
+		var planeMaterialRoadPict = new THREE.MeshBasicMaterial({color: 0xffffff});
+		var planeRoadPict = new THREE.Mesh(planeGeometryRoadPict,planeMaterialRoadPict);
+
+        planeRoadPict.rotation.x=-0.5*Math.PI;
+        planeRoadPict.position.x=15
+        planeRoadPict.position.y=0.1
+        planeRoadPict.position.z=-13
+
+  
+        scene.add(planeRoadPict);
+
+		var planeRoadPict2 = new THREE.Mesh(planeGeometryRoadPict,planeMaterialRoadPict);
+        planeRoadPict2.rotation.x=-0.5*Math.PI;
+        planeRoadPict2.position.x=15
+        planeRoadPict2.position.y=0.1
+        planeRoadPict2.position.z=7
+
+  
+        scene.add(planeRoadPict2);
+		
+		for (let i=0;i<150;i++){
+				
+			var planeGeometryRoadPictC = new THREE.PlaneGeometry(5,0.2);
+			var planeRoadPict = new THREE.Mesh(planeGeometryRoadPictC,planeMaterialRoadPict);
+
+			planeRoadPict.rotation.x=-0.5*Math.PI;
+			planeRoadPict.position.x=15*i-950;
+			planeRoadPict.position.y=0.1
+			planeRoadPict.position.z=-3
+
+	  
+		scene.add(planeRoadPict);
+		}
+
+        // create a cube
+        var cubeGeometry = new THREE.BoxGeometry(4,4,1);
+		var cubeMaterial = new THREE.MeshLambertMaterial({color: 0xff0000});
+        var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+
+		var spotLight = new THREE.SpotLight( 0xffffff );
+		spotLight.position.set( 40, 600, 20 );
+		scene.add(spotLight );
+		
+        cube.position.x=-300;
+        cube.position.y=3;
+        cube.position.z=0;
+        
+        scene.add(cube);
+		
+		const huy = new THREE.Object3D();
+		const radius = 7;  // ui: radius
+		const widthSegments = 12;  // ui: widthSegments
+		const heightSegments = 8;  // ui: heightSegments
+		var spGeometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
+		var spMaterial = new THREE.MeshLambertMaterial({color: 0xe9b992});
+        var sphere = new THREE.Mesh(spGeometry, spMaterial);
+		sphere.name = "sphere-" + scene.children.length;
+		sphere.position.x=-7;
+        sphere.position.y=7;
+        sphere.position.z=0;
+        huy.add(sphere);
+		var spGeometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
+		var spMaterial = new THREE.MeshLambertMaterial({color: 0xe9b992});
+        var sphere = new THREE.Mesh(spGeometry, spMaterial);
+		sphere.name = "sphere-" + scene.children.length;
+		sphere.position.x=7;
+        sphere.position.y=7;
+        sphere.position.z=0;
+        huy.add(sphere);
+		const radiusTop = 6;  // ui: radiusTop
+		const radiusBottom = 7;  // ui: radiusBottom
+		const height = 70;  // ui: height
+		const radialSegments = 12;  // ui: radialSegments
+		var cylinderGeometry = new THREE.CylinderGeometry(radiusTop, radiusBottom, height, radialSegments);
+		var cylinderMaterial = new THREE.MeshLambertMaterial({color: 0xe9b992});
+        var cylinder = new THREE.Mesh(cylinderGeometry, cylinderMaterial);
+		cylinder.name = "cylinder-" + scene.children.length;
+		cylinder.position.x=0;
+        cylinder.position.y=20;
+        cylinder.position.z=7;
+        huy.add(cylinder);
+		var spGeometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
+		var spMaterial = new THREE.MeshLambertMaterial({color: 0xe9b992});
+        var sphere = new THREE.Mesh(spGeometry, spMaterial);
+		sphere.name = "sphere-" + scene.children.length;
+		sphere.position.x=0;
+        sphere.position.y=55;
+        sphere.position.z=7;
+        huy.add(sphere);
+		huy.position.z=250;
+		huy.name = "huy-" + scene.children.length;
+		scene.add(huy);
+		/*
+		var cubeGeometryS = new THREE.BoxGeometry(4,4,4);
+		var cubeMaterialS = new THREE.MeshLambertMaterial({color: 0xff00ff});
+        var cubeS = new THREE.Mesh(cubeGeometryS, cubeMaterialS);*/
+		//for (i=0; i<20; i++)
+		//{
+			//console.log('cub add');
+			for (let j=0; j<800; j++){
+				
+				var cubeSize = Math.ceil((Math.random() * 10));
+				var cubeGeometryS = new THREE.BoxGeometry(cubeSize,cubeSize,cubeSize);
+				var cubeMaterialS = new THREE.MeshLambertMaterial(
+					{color: Math.random() * 0xffffff });
+				var cubeS = new THREE.Mesh(cubeGeometryS, cubeMaterialS);
+				cubeS.name = "cube-" + scene.children.length;
+				while ((cubeS.position.z<20)&&(cubeS.position.z>-20)){
+					cubeS.position.z=-1000 + Math.round((Math.random() * 2000));				
+				}
+				while ((cubeS.position.x<10)&&(cubeS.position.x>-10)){
+					cubeS.position.x=-1000 + Math.round((Math.random() * 2000))				
+				}
+				cubeS.position.y= 0;
+				scene.add(cubeS);
+			}
+	//	}
+        renderer.render(scene, camera);
+		
+		var xStart=0, yStart=0, xNow=0, yNow=0, time=0;
+		
+		document.addEventListener("touchstart", function(e) {
+			//e.preventDefault();
+			time = new Date();
+			e.stopPropagation();
+            xStart = e.changedTouches[0].pageX;
+            yStart = e.changedTouches[0].pageY;
+            xNow = e.changedTouches[0].pageX;
+            yNow = e.changedTouches[0].pageY;
+		})
+		
+		document.addEventListener("touchmove", function(e){
+            //e.preventDefault();
+			let time2 = new Date();
+			if (time2-time>50){
+				e.stopPropagation();
+				xNow = e.changedTouches[0].pageX;
+				yNow = e.changedTouches[0].pageY;
+			}
+        });
+		
+		document.addEventListener("touchend", function(e){
+            xStart=0;
+			yStart=0;
+			xNow=0;
+			yNow=0;
+        });
+		
+		document.addEventListener('keydown', function(event) {
+			if (controls.mouse_control){
+				switch (event.code) {
+					case 'KeyS': {
+						camera.position.z<500 ? (camera.position.z>-500 ? camera.position.z+=speed*Math.cos(camera.rotation.y) : camera.position.z = -499) : camera.position.z = 499;
+						camera.position.x<500 ? (camera.position.x>-500 ? camera.position.x+=speed*Math.sin(camera.rotation.y) : camera.position.x = -499) : camera.position.x = 499;
+						break;
+					}
+					case 'KeyW': {
+						camera.position.z<500 ? (camera.position.z>-500 ? camera.position.z-=speed*Math.cos(camera.rotation.y) : camera.position.z = -499) : camera.position.z = 499;
+						camera.position.x<500 ? (camera.position.x>-500 ? camera.position.x-=speed*Math.sin(camera.rotation.y) : camera.position.x = -499) : camera.position.x = 499;
+						break;
+					}
+					case 'KeyA': {
+						camera.position.z<500 ? (camera.position.z>-500 ? camera.position.z+=speed*Math.sin(camera.rotation.y) : camera.position.z = -499) : camera.position.z = 499;
+						camera.position.x<500 ? (camera.position.x>-500 ? camera.position.x-=speed*Math.cos(camera.rotation.y) : camera.position.x = -499) : camera.position.x = 499;
+						break;
+					}
+					case 'KeyD': {
+						camera.position.z<500 ? (camera.position.z>-500 ? camera.position.z-=speed*Math.sin(camera.rotation.y) : camera.position.z = -499) : camera.position.z = 499;
+						camera.position.x<500 ? (camera.position.x>-500 ? camera.position.x+=speed*Math.cos(camera.rotation.y) : camera.position.x = -499) : camera.position.x = 499;
+						break;
+					}
+				}
+			}
+			else {
+				switch (event.code) {
+					case 'KeyS': {
+						camera.position.z<500 ? (camera.position.z>-500 ? camera.position.z+=speed*Math.cos(camera.rotation.y) : camera.position.z = -499) : camera.position.z = 499;
+						camera.position.x<500 ? (camera.position.x>-500 ? camera.position.x+=speed*Math.sin(camera.rotation.y) : camera.position.x = -499) : camera.position.x = 499;
+						break;
+					}
+					case 'KeyW': {
+						camera.position.z<500 ? (camera.position.z>-500 ? camera.position.z-=speed*Math.cos(camera.rotation.y) : camera.position.z = -499) : camera.position.z = 499;
+						camera.position.x<500 ? (camera.position.x>-500 ? camera.position.x-=speed*Math.sin(camera.rotation.y) : camera.position.x = -499) : camera.position.x = 499;
+						break;
+					}
+					case 'KeyA': {
+						camera.rotation.y+=(3/180*Math.PI);
+						break;
+					}
+					case 'KeyD': {
+						camera.rotation.y-=(3/180*Math.PI);
+						break;
+					}
+				}				
+			}
+		});
+		
+		clock = new THREE.Clock();
+		
+		///
+		const loader = new GLTFLoader();
+		loader.load( 'https://spamigor.site/library/threejs/examples/models/gltf/RobotExpressive/RobotExpressive.glb', function ( gltf ) {
+			model = gltf.scene;
+			model.position.x=150;
+			model.rotation.y=(Math.random()*2*Math.PI);
+			model.name=`robot-${scene.children.length}`;
+			scene.add( model );
+			createGUI( model, gltf.animations );
+		}, undefined, function ( e ) {
+			console.error( e );
+		} );
+		
+		function createGUI( model, animations ) {
+			const states = ['Walking'];
+			mixer = new THREE.AnimationMixer( model );
+			actions = {};
+			for ( let i = 0; i < animations.length; i ++ ) {
+				const clip = animations[ i ];
+				const action = mixer.clipAction( clip );
+				actions[ clip.name ] = action;
+			}
+			activeAction = actions[ 'Walking' ];
+			activeAction.play();
+		}
+		///
+		
+		///
+		let INTERSECTED;
+		let raycaster = new THREE.Raycaster();
+		const pointer = new THREE.Vector2();
+				document.addEventListener( 'mousemove', onPointerMove );
+				
+							function onPointerMove( event ) {
+
+				pointer.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+				pointer.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+			}
+		
+		///
+		
+		var posX=0, posY=0;
+		function pos(e){
+			posX=e.pageX;
+			posY=e.pageY;
+		}
+			console.log(scene.children[957]);
+
+		addEventListener('mousemove', pos, false);
+		var int2;
+		let jjj=0, zzz=0, fff=1, firstStep = true, ddTime=0;
+		
+		function render (time) {
+		///
+			stats.update();
+			const dt = clock.getDelta();
+			if ( mixer ) mixer.update( dt );
+			for (let i=957; i<958;i++){
+				if (scene.children[i].name.includes('robot')){
+					scene.children[i].rotation.y+=(0.05-0.1*Math.random());
+					scene.children[i].position.z+=(0.08*Math.cos(scene.children[i].rotation.y));
+					scene.children[i].position.x+=(0.08*Math.sin(scene.children[i].rotation.y));
+				}
+			}
+			raycaster.setFromCamera( pointer, camera );
+			const intersects = raycaster.intersectObjects( scene.children, false );
+			if ( intersects.length > 0 ) {/*
+			if (intersects!=int2) console.log(intersects);
+			int2=intersects;*/
+			  if (INTERSECTED != intersects[ 0 ].object) {
+				if (INTERSECTED) if (intersects[ 0 ].object.name != INTERSECTED.name) {
+					INTERSECTED.material.emissive = {isColor: true, r: 0, g: 0, b: 0}
+					INTERSECTED = null;
+				}
+				if (intersects[ 0 ].object.name != '') INTERSECTED = intersects[ 0 ].object;
+				if ( INTERSECTED ) if (INTERSECTED.name != '') INTERSECTED.material.emissive = INTERSECTED.material.color;
+			  }
+			} else {
+				if ((INTERSECTED)&&(INTERSECTED.name != '')) INTERSECTED.material.emissive = {isColor: true, r: 0, g: 0, b: 0};
+				INTERSECTED = null
+			}
+			///
+				time *= 0.001;
+				let dTime = Math.round(time*10);
+				if ((dTime%10==0)&&(dTime!=ddTime))
+				{
+				ddTime=dTime;
+					let pos = huySeech();
+					if (dTime%20==0) {
+						scene.children[pos].children[0].material.emissive.b=1; 
+						scene.children[pos].children[0].material.emissive.g=0;
+						scene.children[pos].children[1].material.emissive.g=1;
+						scene.children[pos].children[1].material.emissive.b=0;
+						scene.children[pos].children[3].material.emissive.r=1;
+					} else {
+						scene.children[pos].children[0].material.emissive.g=1; 
+						scene.children[pos].children[0].material.emissive.b=0;
+						scene.children[pos].children[1].material.emissive.b=1;
+						scene.children[pos].children[1].material.emissive.g=0;
+						scene.children[pos].children[3].material.emissive.r=0;
+					}
+				}
+				//console.log(time);
+				jjj+=(0.1*fff);
+				zzz=zzz+fff;
+				cube.rotation.z=-jjj*Math.PI*2*	controls.coub_speed;
+				cube.position.x=zzz*2*controls.coub_speed;
+				if (cube.position.x>700) {
+					fff=(-1);
+					cube.position.z = -10;
+				}
+				if (cube.position.x<-700) {
+					fff=1;
+					cube.position.z = 3;
+				}
+				camera.position.y = 10;
+				scene.add(cube);
+				if (controls.look_at_coub) {
+					camera.lookAt(cube.position);
+					firstStep = true;
+				}
+				else {
+					if (firstStep) {
+						firstStep = false;
+						camera.rotation.x=0;
+						camera.rotation.z=0;
+					}
+					if ((controls.mouse_control)&&(!controls.mobile)) camera.rotation.y-=((posX-(window.innerWidth/2))*Math.PI)/(window.innerWidth*120);
+					if (controls.mobile) {				
+						camera.position.z>-500 ? (camera.position.z<500 ? camera.position.z+=(yNow-yStart)/250*Math.cos(camera.rotation.y) : camera.position.z = 499) : camera.position.z = -499;
+						camera.position.x>-500 ? (camera.position.x<500 ? camera.position.x+=(yNow-yStart)/250*Math.sin(camera.rotation.y) : camera.position.x = 499) : camera.position.x = -499;
+						camera.rotation.y-=(((xNow-xStart))/2*Math.PI)/(window.innerWidth*40);
+					}
+				}
+				requestAnimationFrame(render);
+				renderer.render(scene, camera);
+			}
+			requestAnimationFrame(render);
+
+	function huySeech(){
+		for (let i=0; i<scene.children.length; i++){
+			if (scene.children[i].name.substr(0,3)=='huy') return i;
+		}
+	}
+
+</script>
+</body>
+</html>

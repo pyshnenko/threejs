@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+
+<html>
+<meta charset="UTF-8">
+<head>
+    <title>my test-file</title>
+	<meta name="viewport" content="width=device-width, user-scalable=no">
+    <style>
+        body{
+            /* set margin to 0 and overflow to hidden, to go fullscreen */
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="c"></canvas>
+<script type="importmap">
+			{
+				"imports": {
+					"three": "https://spamigor.site/library/threejs/build/three.module.js"
+				}
+			}
+		</script>
+<script type="module">
+	import * as THREE from 'three';
+	import { GUI } from 'https://spamigor.site/library/threejs/examples/jsm/libs/lil-gui.module.min.js';
+	import {RectAreaLightUniformsLib} from 'https://spamigor.site/library/threejs/examples/jsm/lights/RectAreaLightUniformsLib.js';
+	import {RectAreaLightHelper} from 'https://spamigor.site/library/threejs/examples/jsm/helpers/RectAreaLightHelper.js';
+	import { MeshSurfaceSampler } from 'https://spamigor.site/library/threejs/examples/jsm/math/MeshSurfaceSampler.js';
+	import {OrbitControls} from 'https://spamigor.site/library/threejs/examples/jsm/controls/OrbitControls.js';
+	import Stats from 'https://spamigor.site/library/threejs/examples/jsm/libs/stats.module.js';
+	
+	var mobile = false, mControl = false, lookAtCoub = true, speed = 5;
+
+	const canvas = document.querySelector('#c');
+	const renderer = new THREE.WebGLRenderer({canvas});
+	RectAreaLightUniformsLib.init();
+	
+	let blossomMesh;
+	let blossomGeometry;
+	let sampler;
+	const count = 1000;
+	const dummy = new THREE.Object3D();
+
+	const _position = new THREE.Vector3();
+	const _normal = new THREE.Vector3();
+
+	const gui = new GUI();
+
+	var scene = new THREE.Scene();
+
+	var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+	
+	const controls = new OrbitControls(camera, canvas);
+	controls.target.set(0, 5, 0);
+	controls.update();
+
+	renderer.setSize(window.innerWidth, window.innerHeight);
+	renderer.physicallyCorrectLights = true;
+	renderer.setClearColor('#040404', 1.0);
+	renderer.setSize(window.innerWidth, window.innerHeight);
+	renderer.shadowMapEnabled = true;
+
+	scene.fog = new THREE.Fog('#000000', 200, 800);
+	var poss = [];
+	for (let i=-20; i<21;i+=20)
+		for (let j=-20; j<21; j+=20)
+			for (let ij = -20; ij<21; ij+=20)
+			{
+				if (!((i==0)&&(j==0)&&(ij==0))) {
+					var cubeGeometry = new THREE.BoxGeometry(16,16,16);
+					var cubeMaterial = new THREE.MeshStandardMaterial({color: 0x00003c});
+					var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+					
+					cube.position.x=i;
+					cube.position.y=j;
+					cube.position.z=ij;
+					cube.name = `cube-${i}:${j}:${ij}`;	
+					scene.add(cube);
+					poss.push({x: i, y: j, z: ij});
+				}
+			};
+	let radius;
+	window.innerWidth>window.innerHeight ? radius = window.innerWidth/3 : radius = window.innerHeight/3;
+	const star = new THREE.Object3D();
+	const slight = new THREE.PointLight(0xffffff, 500);
+	const slight1 = slight.clone();
+	const slight2 = slight.clone();
+	const slight3 = slight.clone();
+	const slight4 = slight.clone();
+	const slight5 = slight.clone();
+	const slight6 = slight.clone();
+	const slight7 = slight.clone();
+	slight1.position.set(80, 80, -80);
+	slight2.position.set(80, 80, 80);
+	slight3.position.set(80, -80, -80);
+	slight4.position.set(80, -80, 80);
+	slight5.position.set(-80, 80, -80);
+	slight6.position.set(-80, 80, 80);
+	slight7.position.set(-80, -80, -80);
+	slight.position.set(-80, -80, 80);
+	star.add(slight);
+	star.add(slight1);
+	star.add(slight2);
+	star.add(slight3);
+	star.add(slight4);
+	star.add(slight5);
+	star.add(slight6);
+	star.add(slight7);
+	for (let j=0; j<1000; j++){
+	
+		var cubeSize = Math.round((Math.random()*10))/10;
+		var cubeGeometryS = new THREE.SphereGeometry(cubeSize, 8, 8);
+		var cubeMaterialS = new THREE.MeshStandardMaterial({color: ((Math.random() * 0xffffff)&0xffffa0) });
+		var cubeS = new THREE.Mesh(cubeGeometryS, cubeMaterialS);
+		cubeS.name = "cube-" + scene.children.length;
+		cubeS.position.z=radius/(-2) + Math.round((Math.random() * radius));
+		cubeS.position.x=radius/(-2) + Math.round((Math.random() * radius));
+		cubeS.position.y=radius/(-2) + Math.round((Math.random() * radius));
+		star.add(cubeS);
+	}
+	scene.add(star);
+
+	camera.position.x = 400;
+	camera.position.y = 400;
+	camera.position.z = 400;
+	camera.lookAt(0, 0, 0);
+	
+	let cccolor = {
+		value: 0xffffff,
+		intensity: 300,
+		cubeValue: 0x00003c,
+		backIntensity: 500,
+		bagle: 0x202020
+	};
+	
+	gui.addColor(cccolor, 'value').name('цвет свечения');
+	gui.add(cccolor, 'intensity', 0, 1000, 1).name('яркость света');
+	gui.addColor(cccolor, 'cubeValue').name('цвет куба');
+	gui.add(cccolor, 'backIntensity', 0, 1000, 1).name('яркость подсветки');
+	gui.addColor(cccolor, 'bagle').name('цвет бейгла');
+	
+	let color = 0xffffff;
+	let intensity = 300;
+	const width = 32;
+	const height = 32;
+	const light = new THREE.RectAreaLight(color, intensity, width, height);
+	light.position.set(0, 0, 10);
+	light.rotation.x = THREE.MathUtils.degToRad(180);
+	scene.add(light);
+	const light1 = light.clone();
+	light1.position.set(0, 10, 0);
+	light1.rotation.x = THREE.MathUtils.degToRad(90);
+	scene.add(light1);
+	const light2 = light.clone();
+	light2.position.set(0, 0, -10);
+	light2.rotation.y = THREE.MathUtils.degToRad(180);
+	scene.add(light2);
+	const light3 = light.clone();
+	light3.position.set(-10, 0, 0);
+	light3.rotation.y = THREE.MathUtils.degToRad(90);
+	scene.add(light3);
+	const light4 = light.clone();
+	light4.position.set(10, 0, 0);
+	light4.rotation.x = THREE.MathUtils.degToRad(90);
+	light4.rotation.y = THREE.MathUtils.degToRad(-90);
+	scene.add(light4);
+	const light5 = light.clone();
+	light5.position.set(0, -10, 0);
+	light5.rotation.x = THREE.MathUtils.degToRad(-90);
+	scene.add(light5);
+
+	const radiusB = 6;
+	const tubeRadiusB = 3;
+	const radialSegmentsB = 16;
+	const tubularSegmentsB = 48;
+	var geometryBMat = new THREE.MeshStandardMaterial({color: cccolor.bagle});
+	const geometryB = new THREE.TorusGeometry(
+		radiusB, tubeRadiusB,
+		radialSegmentsB, tubularSegmentsB
+	);
+	var bagle = new THREE.Mesh(geometryB, geometryBMat);
+	
+	bagle.position.x=0;
+	bagle.position.y=0;
+	bagle.position.z=0;
+	bagle.name='bagle';	
+	
+	scene.add(bagle);
+	console.log(scene.children.length);
+	
+	let sphereSize = 0.3;
+	let sphereGeometryS = new THREE.SphereGeometry(sphereSize, 16, 16);
+	let sphereMaterialS = new THREE.MeshStandardMaterial({color: 0x000000});
+	const _blossomMesh = new THREE.Mesh(sphereGeometryS, sphereMaterialS);
+		
+	blossomGeometry = _blossomMesh.geometry.clone();
+
+	blossomMesh = new THREE.InstancedMesh( blossomGeometry, sphereMaterialS, count );
+			
+	blossomMesh.instanceMatrix.setUsage( THREE.DynamicDrawUsage );
+	
+	sampler = new MeshSurfaceSampler( bagle )
+		.build();	
+	
+	for ( let i = 0; i < count; i ++ ) {
+
+
+		sampler.sample( _position, _normal);
+
+		dummy.position.copy( _position );
+		dummy.updateMatrix();
+
+		blossomMesh.setMatrixAt( i, dummy.matrix );
+
+	}
+
+	scene.add( blossomMesh );
+	
+	let INTERSECTED;
+	let click = false;
+	let raycaster = new THREE.Raycaster();
+	const pointer = new THREE.Vector2();
+	document.addEventListener( 'mousemove', onPointerMove );
+	document.addEventListener( 'click', onPointerClick );
+	
+	function onPointerMove( event ) {
+
+		pointer.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+		pointer.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+	}
+	
+	function onPointerClick( event ) {
+
+		pointer.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+		pointer.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+		click = true;
+	}
+	
+	let rot=0, dtime=0;
+	let k=1;
+	let colBuf, cubeMove = { pos: [], k: []};
+	
+	for (let i=0; i<27; i++) { cubeMove.pos[i] = false; cubeMove.k[i] = 1; };
+	
+	let stats = new Stats();
+		document.body.appendChild( stats.dom );
+		
+	renderer.render(scene, camera);
+	console.log(scene.children);
+	function render (time) {
+		stats.update();
+		raycaster.setFromCamera( pointer, camera );
+		const intersects = raycaster.intersectObjects( scene.children, false );
+		if ( intersects.length > 0 ) {
+		if (INTERSECTED != intersects[ 0 ].object) {
+			if (INTERSECTED) if (intersects[ 0 ].object.name != INTERSECTED.name) {
+				INTERSECTED.material.emissive = {isColor: true, r: 0, g: 0, b: 0}
+				INTERSECTED = null;
+			}
+			if (intersects[ 0 ].object.name != '') INTERSECTED = intersects[ 0 ].object;
+			if ( INTERSECTED ) if (INTERSECTED.name != '') INTERSECTED.material.emissive = INTERSECTED.material.color;
+		  }
+		} else {
+			if ((INTERSECTED)&&(INTERSECTED.name != '')) INTERSECTED.material.emissive = {isColor: true, r: 0, g: 0, b: 0};
+			INTERSECTED = null;
+			click = false;
+		}
+		
+		if (click&&INTERSECTED) {
+			cubeMove.pos[seechByUUID(INTERSECTED.uuid)]=true;
+			click = false;
+		}
+		
+		let cubeSpeed = 0.01;
+		for (let i=0; i<26; i++) 
+			if (cubeMove.pos[i]==true) {
+				if (poss[i].x!=0) {
+					poss[i].x += poss[i].x*cubeMove.k[i]*cubeSpeed;
+					scene.children[i].position.x += poss[i].x*cubeMove.k[i]*cubeSpeed;
+					if (Math.abs(poss[i].x)>100) { cubeMove.pos[i]=false; cubeMove.k[i]=(-1);}
+					if (Math.abs(poss[i].x)<=20) { cubeMove.pos[i]=false; cubeMove.k[i]=1;}
+				}
+				if (poss[i].y!=0) {
+					poss[i].y += poss[i].y*cubeMove.k[i]*cubeSpeed;
+					scene.children[i].position.y += poss[i].y*cubeMove.k[i]*cubeSpeed;
+					if (Math.abs(poss[i].y)>100) { cubeMove.pos[i]=false; cubeMove.k[i]=(-1);}
+					if (Math.abs(poss[i].y)<=20) { cubeMove.pos[i]=false; cubeMove.k[i]=1;}
+				}
+				if (poss[i].z!=0) {
+					poss[i].z += poss[i].z*cubeMove.k[i]*cubeSpeed;
+					scene.children[i].position.z += poss[i].z*cubeMove.k[i]*cubeSpeed;
+					if (Math.abs(poss[i].z)>100) { cubeMove.pos[i]=false; cubeMove.k[i]=(-1);}
+					if (Math.abs(poss[i].z)<=20) { cubeMove.pos[i]=false; cubeMove.k[i]=1;}
+				}
+			}
+	
+		for (let i=27; i<34; i++) {
+			let bcolor = new THREE.Color(cccolor.value);
+			scene.children[i].intensity = cccolor.intensity;			
+			scene.children[i].color = bcolor;	
+		}
+		for (let i=0; i<26; i++) {
+			let bcolor = new THREE.Color(cccolor.cubeValue);		
+			scene.children[i].material.color = bcolor;			
+		}
+		for (let i=0; i<8; i++) 
+			scene.children[26].children[i].intensity = cccolor.backIntensity;
+		if ((time-dtime)>100) {
+			dtime=time;
+			for (let i=0; i<26; i++)
+			{
+				Math.abs(scene.children[i].position.x-poss[i].x)<0.6 ? scene.children[i].position.x+=(5 - Math.round(Math.random()*10))/100 : scene.children[i].position.x=poss[i].x;
+				Math.abs(scene.children[i].position.y-poss[i].y)<0.6 ? scene.children[i].position.y+=(5 - Math.round(Math.random()*10))/100 : scene.children[i].position.y=poss[i].y;
+				Math.abs(scene.children[i].position.z-poss[i].z)<0.6 ? scene.children[i].position.z+=(5 - Math.round(Math.random()*10))/100 : scene.children[i].position.z=poss[i].z;
+			}
+		}
+		let bcolorb = new THREE.Color(cccolor.bagle);
+		scene.children[33].material.color = bcolorb;
+		rot+=0.001;
+		star.rotation.y = rot;
+		blossomMesh.rotation.z = rot;
+		camera.lookAt(0, 0, 0);
+           requestAnimationFrame(render);
+		renderer.render(scene, camera);
+	}
+	requestAnimationFrame(render);	
+	window.addEventListener( 'resize', onWindowResize );
+	function onWindowResize() {
+
+		camera.aspect = window.innerWidth / window.innerHeight;
+		camera.updateProjectionMatrix();
+		renderer.setSize( window.innerWidth, window.innerHeight );
+
+	}
+	
+	function seechByUUID (uuid) {
+		for (let i=0; i<26; i++)
+			if (scene.children[i].uuid == uuid)
+				return i;
+	}
+
+	</script>
+</body>
+</html>
