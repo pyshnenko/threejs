@@ -13,6 +13,8 @@ const WebSocketClient = require('websocket').client;
 const socketPort = '8080/';
 let client = new WebSocketClient();
 
+let socket;
+
 const Redis = require('ioredis');
 const redis = new Redis({
   port: 6379,
@@ -36,6 +38,7 @@ app.use(cors({origin: '*'}));
 
 app.get("/1587", cors({origin: '*'}), function(request, response){
     console.log(`URL: ${request.url}`);
+	socket.send(`TM: s2: URL: ${request.url}`);
 	filePath = "exp1/test5.html";
 	fs.readFile(filePath, function(error, data){
               
@@ -44,6 +47,7 @@ app.get("/1587", cors({origin: '*'}), function(request, response){
             response.statusCode = 404;
             response.end("Resourse not found!");
             console.log('404');
+			socket.send(`TM: s2: 404`);
         }   
         else{
             response.end(data);
@@ -54,6 +58,7 @@ app.get("/1587", cors({origin: '*'}), function(request, response){
 app.get("/newLibs*", function(request, response){
 	
     console.log(`URL: ${request.url}`);
+	socket.send(`TM: s2: URL: ${request.url}`);
     filePath = request.url.substr(1);
 	if (filePath[filePath.length-1]=='/')  filePath = filePath.slice(0,-1);
     fs.readFile(filePath, function(error, data){
@@ -63,6 +68,7 @@ app.get("/newLibs*", function(request, response){
             response.statusCode = 404;
             response.end("Resourse not found!");
             console.log('404');
+			socket.send(`TM: s2: 404`);
         }   
         else{
             response.end(data);
@@ -73,6 +79,7 @@ app.get("/newLibs*", function(request, response){
 app.get("/libs*", function(request, response){
 	
     console.log(`URL: ${request.url}`);
+	socket.send(`TM: s2: URL: ${request.url}`);
     filePath = request.url.substr(1);
     fs.readFile(filePath, function(error, data){
               
@@ -81,6 +88,7 @@ app.get("/libs*", function(request, response){
             response.statusCode = 404;
             response.end("Resourse not found!");
             console.log('404');
+			socket.send(`TM: s2: 404`);
         }   
         else{
             response.end(data);
@@ -91,6 +99,7 @@ app.get("/libs*", function(request, response){
 app.get("/", function(request, response){
 	
     console.log(`URL: ${request.url}`);
+	socket.send(`TM: s2: URL: ${request.url}`);
     filePath = request.url.substr(1);
     if (!filePath) filePath = "exp1/test.html";
     if (filePath=='1587') filePath = "exp1/test5.html";
@@ -101,6 +110,7 @@ app.get("/", function(request, response){
             response.statusCode = 404;
             response.end("Resourse not found!");
             console.log('404');
+			socket.send(`TM: s2: 404`);
         }   
         else{
             response.end(data);
@@ -111,6 +121,7 @@ app.get("/", function(request, response){
 app.get("/favico*", function(request, response){
 	
     console.log(`URL: ${request.url}`);
+	socket.send(`TM: s2: URL: ${request.url}`);
     filePath = request.url.substr(1);
     fs.readFile(filePath, function(error, data){
               
@@ -119,6 +130,7 @@ app.get("/favico*", function(request, response){
             response.statusCode = 404;
             response.end("Resourse not found!");
             console.log('404');
+			socket.send(`TM: s2: 404`);
         }   
         else{
             response.end(data);
@@ -168,6 +180,7 @@ app.post("/api", async function(request, response){
 		});
 		} catch (e) {
 			console.log(e);
+			socket.send(`TM: s2: URL: ${e}`);
 			response.send(JSON.stringify({status: 500, error: error.message}));
 		}
 	}
@@ -222,6 +235,8 @@ client.on('connect', function(connection) {
 			console.log("Received: '" + message.utf8Data + "'");
         }
     });
+	
+	socket = connection;
     
     function sendNumber() {
         if (connection.connected) {
