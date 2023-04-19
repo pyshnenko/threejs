@@ -28,7 +28,6 @@ let corsOptions = {
 	origin : '*',
 	optionsSuccessStatus: 200
 }
-
 app.use(function(req, res, next){
     if(!req.connection.encrypted){ res.redirect('https://' + req.headers.host + req.url); }
     else{ return next(); }
@@ -36,7 +35,13 @@ app.use(function(req, res, next){
 app.use(bodyParser.json());
 app.use(cors({origin: '*'}));
 
-app.get("/1587", cors({origin: '*'}), function(request, response){
+app.use(function(req, res, next){
+	console.log('\n\n');
+	console.log(req.url);
+	next();
+});
+
+app.get('(/4014)?/1587', cors({origin: '*'}), function(request, response){
     console.log(`URL: ${request.url}`);
 	socket.send(`TM: s2: URL: ${request.url}`);
 	filePath = "exp1/test5.html";
@@ -55,11 +60,11 @@ app.get("/1587", cors({origin: '*'}), function(request, response){
     });
 });
 
-app.get("/newLibs*", function(request, response){
+app.get('(/4014)?/newLibs*', function(request, response){
 	
     console.log(`URL: ${request.url}`);
 	socket.send(`TM: s2: URL: ${request.url}`);
-    filePath = request.url.substr(1);
+    filePath = request.url.substr(request.url[1]==='4' ? 5 : 1);
 	if (filePath[filePath.length-1]=='/')  filePath = filePath.slice(0,-1);
     fs.readFile(filePath, function(error, data){
 		console.log(`URL: ${request.url}`);
@@ -76,11 +81,13 @@ app.get("/newLibs*", function(request, response){
     });
 });
 
-app.get("/libs*", function(request, response){
+app.get('(/4014)?/libs*', function(request, response){
 	
     console.log(`URL: ${request.url}`);
 	socket.send(`TM: s2: URL: ${request.url}`);
-    filePath = request.url.substr(1);
+    filePath = request.url.substr(request.url[1]==='4' ? 6 : 1);
+    console.log(`filePath: ${filePath}`);
+    console.log(`filePath[1]: ${filePath[1]}`);
     fs.readFile(filePath, function(error, data){
               
         if(error){
@@ -96,11 +103,11 @@ app.get("/libs*", function(request, response){
     });
 });
 
-app.get("/", function(request, response){
+app.get('(/4014)?/', function(request, response){
 	
     console.log(`URL: ${request.url}`);
 	socket.send(`TM: s2: URL: ${request.url}`);
-    filePath = request.url.substr(1);
+    filePath = request.url.substr(request.url[1]==='4' ? 5 : 1);
     if (!filePath) filePath = "exp1/test.html";
     if (filePath=='1587') filePath = "exp1/test5.html";
     fs.readFile(filePath, function(error, data){
@@ -118,11 +125,11 @@ app.get("/", function(request, response){
     });
 });
 
-app.get("/favico*", function(request, response){
+app.get('(/4014)?/favico*', function(request, response){
 	
     console.log(`URL: ${request.url}`);
 	socket.send(`TM: s2: URL: ${request.url}`);
-    filePath = request.url.substr(1);
+    filePath = request.url.substr(request.url[1]==='4' ? 5 : 1);
     fs.readFile(filePath, function(error, data){
               
         if(error){
@@ -138,14 +145,14 @@ app.get("/favico*", function(request, response){
     });
 });
 
-app.get("/apiTok", async function(request, response){
+app.get('(/4014)?/apiTok', async function(request, response){
 		await bcrypt.hash((request.query.pass+request.query.login.trim()), salt).then(function(res) {
 			console.log(res);
 			redis.get(res).then(response.send(res)).catch((e) => response.send(JSON.stringify({status: 403, error:'incorrect'})));
 		});
 });
 
-app.post("/api", async function(request, response){	
+app.post('(/4014)?/api', async function(request, response){	
     if(!request.body) return response.sendStatus(200);
 	console.log(request.body);
 	let buf = {
