@@ -18,7 +18,7 @@ let socket;
 const Redis = require('ioredis');
 const redis = new Redis({
   port: 6379,
-  host: "45.89.66.91",
+  host: "212.22.94.200",
   password: "ugD6s2xz"
 });
 let salt;
