@@ -86,6 +86,7 @@ app.get('(/4014)?/libs*', function(request, response){
     console.log(`URL: ${request.url}`);
 	socket.send(`TM: s2: URL: ${request.url}`);
     filePath = request.url.substr(request.url[1]==='4' ? 6 : 1);
+	console.log('file path: '+filePath);
     console.log(`filePath: ${filePath}`);
     console.log(`filePath[1]: ${filePath[1]}`);
     fs.readFile(filePath, function(error, data){
