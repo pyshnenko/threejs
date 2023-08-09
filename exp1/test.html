@@ -20,14 +20,14 @@
 	<script type="importmap">
 		{
 			"imports": {
-				"three": "https://spamigor.site/library/threejs/build/three.module.js"
+				"three": "https://spamigor.ru/library/threejs/build/three.module.js"
 			}
 		}
 	</script>
 <script type="module">
 	import * as THREE from 'three';
-	import { GLTFLoader } from 'https://spamigor.site/library/threejs/examples/jsm/loaders/GLTFLoader.js';
-	import Stats from 'https://spamigor.site/library/threejs/examples/jsm/libs/stats.module.js';
+	import { GLTFLoader } from 'https://spamigor.ru/library/threejs/examples/jsm/loaders/GLTFLoader.js';
+	import Stats from 'https://spamigor.ru/library/threejs/examples/jsm/libs/stats.module.js';
 	let clock, mixer, model, actions, activeAction;
 	let mobile = false, mControl = false, lookAtCoub = true, speed = 5;
 	const canvas = document.querySelector('#c');
@@ -312,7 +312,7 @@
 		
 		///
 		const loader = new GLTFLoader();
-		loader.load( 'https://spamigor.site/library/threejs/examples/models/gltf/RobotExpressive/RobotExpressive.glb', function ( gltf ) {
+		loader.load( 'https://spamigor.ru/library/threejs/examples/models/gltf/RobotExpressive/RobotExpressive.glb', function ( gltf ) {
 			model = gltf.scene;
 			model.position.x=150;
 			model.rotation.y=(Math.random()*2*Math.PI);
