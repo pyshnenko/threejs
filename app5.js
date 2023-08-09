@@ -108,6 +108,7 @@ app.get('(/4014)?/', function(request, response){
 	
     console.log(`URL: ${request.url}`);
 	socket.send(`TM: s2: URL: ${request.url}`);
+	console.log('request.url[1]: ' + request.url[1]);
     filePath = request.url.substr(request.url[1]==='4' ? 5 : 1);
 	console.log('file path: ' + filePath);
     if (!filePath) filePath = "exp1/test.html";
