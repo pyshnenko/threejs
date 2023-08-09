@@ -207,9 +207,9 @@ app.post('(/4014)?/api', async function(request, response){
 https
   .createServer(
     {
-		key: fs.readFileSync("/etc/letsencrypt/live/spamigor.site/privkey.pem"),//("/home/spamigor/node/certHttps/key.pem"),
-		cert: fs.readFileSync("/etc/letsencrypt/live/spamigor.site/fullchain.pem"),//("/home/spamigor/node/certHttps/cert.pem"),
-		ca: fs.readFileSync("/etc/letsencrypt/live/spamigor.site/chain.pem"),
+		key: fs.readFileSync("/etc/letsencrypt/live/spamigor.ru/privkey.pem"),//("/home/spamigor/node/certHttps/key.pem"),
+		cert: fs.readFileSync("/etc/letsencrypt/live/spamigor.ru/fullchain.pem"),//("/home/spamigor/node/certHttps/cert.pem"),
+		ca: fs.readFileSync("/etc/letsencrypt/live/spamigor.ru/chain.pem"),
     },
     app
   )
@@ -221,7 +221,7 @@ https
     console.log('Connect Error: ' + error.toString());
 	setTimeout(() => {
 		console.log('reconnect');
-		client.connect('wss://spamigor.site:' + socketPort, 'echo-protocol');
+		client.connect('wss://spamigor.ru:' + socketPort, 'echo-protocol');
 	}, 60*1000)
 });
 
@@ -234,7 +234,7 @@ client.on('connect', function(connection) {
         console.log('echo-protocol Connection Closed');
 		setTimeout(() => {
 			console.log('reconnect');
-			client.connect('wss://spamigor.site:' + socketPort, 'echo-protocol');
+			client.connect('wss://spamigor.ru:' + socketPort, 'echo-protocol');
 		}, 60*1000)
     });
     connection.on('message', function(message) {
@@ -256,4 +256,4 @@ client.on('connect', function(connection) {
     sendNumber();
 });
 
-client.connect('wss://spamigor.site:' + socketPort, 'echo-protocol');
+client.connect('wss://spamigor.ru:' + socketPort, 'echo-protocol');
