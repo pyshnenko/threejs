@@ -18,7 +18,7 @@ let socket;
 const Redis = require('ioredis');
 const redis = new Redis({
   port: 6379,
-  host: "212.22.94.200",
+  host: "spamigor.ru",
   password: "ugD6s2xz"
 });
 let salt;
@@ -169,43 +169,62 @@ app.post('(/4014)?/api', async function(request, response){
 	let userName;
 	if (buf.token[0]==='$') buf.token=buf.token.substr(7);
 	await redis.get(buf.token).then(res => userName = res).catch((e) => response.send(JSON.stringify({status: 403, error:'incorrect'})));
+    console.log(userName);
 	if (buf.telegToken&&userName&&buf.id&&buf.lang) {
+        console.log('im here 174');
 		let config = {
 			lang: buf.lang,
 			oem: 1,
 			psm: 3,
 		};
 		const file_reqvest = `https://api.telegram.org/bot${buf.telegToken}/getFile?file_id=${buf.id}`;
+        console.log(file_reqvest);
 		try {
+            console.log('im here 183');
 		axios.get(file_reqvest).then(res => {
 			let img = `https://api.telegram.org/file/bot${buf.telegToken}/${res.data.result.file_path}`;
+            console.log('im here 186');
 			
 			tesseract
 				.recognize(img, config)
 				.then((text) => {
+                    console.log(text)
 					response.send(JSON.stringify({status: 200, text: text}));
+                    console.log('done');
+                    console.log('im here 193');
 				})
 				.catch((error) => {
-					response.send(JSON.stringify({status: 500, error: error.message}))
+					response.send(JSON.stringify({status: 500, error: error.message}));
+                    console.log('err');
+                    console.log(error);
+                    console.log('im here 199');
 				})
 		});
 		} catch (e) {
+            console.log('im here 203');
 			console.log(e);
 			socket.send(`TM: s2: URL: ${e}`);
 			response.send(JSON.stringify({status: 500, error: error.message}));
 		}
 	}
 	else if (userName&&buf.lang&&buf.url) {
+        console.log('im here 210');
 		tesseract
 			.recognize(buf.url, config)
 			.then((text) => {
+                console.log('im here 214');
 				response.send(JSON.stringify({status: 200, text: text}));
 			})
 			.catch((error) => {
+                console.log('im here 218');
 				response.send(JSON.stringify({status: 500, error: error.message}))
+                console.log(error);
 			})
 	}
-	else response.send(JSON.stringify({status: 403, error:'incorrect'}));
+	else {
+        response.send(JSON.stringify({status: 403, error:'incorrect'}));        
+        console.log('im here 225');
+    }
 });
 
 https
