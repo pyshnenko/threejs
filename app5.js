@@ -7,7 +7,7 @@ const app = express();
 const cors = require('cors');
 const urlencodedParser = express.urlencoded({extended: false});
 var bodyParser = require('body-parser');
-const tesseract = require("node-tesseract-ocr");
+const tesseract = require("tesseract.js");
 const axios = require('axios').default;
 const WebSocketClient = require('websocket').client;
 const socketPort = '8080/';
@@ -172,11 +172,12 @@ app.post('(/4014)?/api', async function(request, response){
     console.log(userName);
 	if (buf.telegToken&&userName&&buf.id&&buf.lang) {
         console.log('im here 174');
-		let config = {
+		/*let config = {
 			lang: buf.lang,
 			oem: 1,
 			psm: 3,
-		};
+		};*/
+        let config = buf.lang;
 		const file_reqvest = `https://api.telegram.org/bot${buf.telegToken}/getFile?file_id=${buf.id}`;
         console.log(file_reqvest);
 		try {
@@ -188,8 +189,8 @@ app.post('(/4014)?/api', async function(request, response){
 			tesseract
 				.recognize(img, config)
 				.then((text) => {
-                    console.log(text)
-					response.send(JSON.stringify({status: 200, text: text}));
+                    console.log(text.data.text)
+					response.send(JSON.stringify({status: 200, text: text.data.text}));
                     console.log('done');
                     console.log('im here 193');
 				})
@@ -213,7 +214,7 @@ app.post('(/4014)?/api', async function(request, response){
 			.recognize(buf.url, config)
 			.then((text) => {
                 console.log('im here 214');
-				response.send(JSON.stringify({status: 200, text: text}));
+				response.send(JSON.stringify({status: 200, text: text.data.text}));
 			})
 			.catch((error) => {
                 console.log('im here 218');
